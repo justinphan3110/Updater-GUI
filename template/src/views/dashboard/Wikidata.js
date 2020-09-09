@@ -17,10 +17,10 @@ CProgress,
 CRow,
 CCallout
 } from '@coreui/react'
-import CIcon from '@coreui/icons-react'
 
 import axios from 'axios';
 import WikiDataItem from '../items/WikiDataItem';
+import WikiDataKafka from '../../websockets/WikiDataKafka';
 
 
 
@@ -31,6 +31,8 @@ export default class Wikidata extends Component {
         this.state = {
             data: [], 
         }
+
+        this.removeEntity = this.removeEntity.bind(this)
     }
 
 
@@ -44,6 +46,13 @@ export default class Wikidata extends Component {
         this.fetch_wiki_data(params);
     }
 
+    componentDidUpdate(prevProps, prevStates) {
+        if(this.state.data !== prevStates.data) {
+            this.setState({
+                data: this.state.data
+            })
+        }
+    }
 
     fetch_wiki_data(params) {
         const BASE_URL = process.env.REACT_APP_REST_CONNECTION + 'get-wikidata-entities';        
@@ -64,9 +73,20 @@ export default class Wikidata extends Component {
     }
 
 
+    removeEntity(id) {
+        // const new_data = this.state.data.filter(item => item.wikidata_id !== id);
+        this.setState({
+            data: this.state.data.filter(item => item.wikidata_id != id )
+        });
+    }
+
+
     render() {
-        const items = this.state.data.map((item) => {
-            return <WikiDataItem item={item}/>
+        var items = this.state.data.map((item) => {
+            return <WikiDataItem 
+                    key={item.wikidata_id}
+                    removeEntity={this.removeEntity}
+                    item={item}/>
         })
 
 
@@ -84,7 +104,7 @@ export default class Wikidata extends Component {
             <CCol>
             <CCard>
                 <CCardHeader>
-                <h4 class="text-body">Entity management</h4>
+                <WikiDataKafka/>
                 </CCardHeader>
                 <CCardBody>
                 <br />
@@ -93,13 +113,13 @@ export default class Wikidata extends Component {
                     <thead className="thead-light">
                     <tr>
                         {/* <th className="text-center"><CIcon name="cil-people" /></th> */}
-                        <th class="text-black-60" scope="col">wikidata_id</th>
-                        <th class="text-black-60" scope="col">type</th>
-                        <th class="text-black-60" scope="col">title</th>
-                        <th class="text-black-60" scope="col">aliases</th>
-                        <th class="text-black-60" scope="col">pageview</th>
-                        <th class="text-black-60" scope="col">lastUpdated</th>
-                        <th class="text-black-60" scope="col">actions</th>
+                        <th className="text-black-60" scope="col">wikidata_id</th>
+                        <th className="text-black-60" scope="col">type</th>
+                        <th className="text-black-60" scope="col">title</th>
+                        <th className="text-black-60" scope="col">aliases</th>
+                        <th className="text-black-60" scope="col">pageview</th>
+                        <th className="text-black-60" scope="col">lastUpdated</th>
+                        <th className="text-black-60" scope="col">actions</th>
                     </tr>
                     </thead>
                     <tbody>
