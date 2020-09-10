@@ -22,13 +22,23 @@ router.ws('/', async (ws,req) =>{
           const consumer = kafka.consumer({ groupId: "node-js-consumer" + Math.random(), memberId: "kafka-node-app"});
           await consumer.connect();
           await consumer.subscribe({topic: "ner-incremental-local", fromBeginning: true});
+          
+          try {
+            await consumer.run(
+              { 
 
-          await consumer.run({
-            eachMessage: async ({topic, partition, message}) => {
-              ws.send(message.value.toString());
-            }
-            
-          });
+                eachMessage: async ({topic, partition, message}) => {
+                  try {
+                    ws.send(message.value.toString());
+                  } catch (error) {
+                    // console.log('Failed to process message, sending to DLQ');
+                  }
+                }
+              }
+            );
+          }catch(e) {
+            console.log("error in consumer each message");
+          } 
         }
         sub(msg).catch();
       })
