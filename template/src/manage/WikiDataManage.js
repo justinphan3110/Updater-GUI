@@ -73,8 +73,8 @@ export default class WikiDataManage extends Component {
      * This function establishes the connect with the websocket and also ensures constant reconnection if connection closes
      */
     connect = () => {
-        
-        var ws = new WebSocket("ws://localhost:3001/consumer");
+        var url = process.env.REACT_APP_HOST + ":" + process.env.REACT_APP_KAFKA_CONSUMER_PORT + process.env.REACT_APP_KAFKA_CONSUMER_ROUTE;
+        var ws = new WebSocket("ws://" + url);
         let that = this; // cache the this
         var connectInterval;
 
@@ -83,10 +83,11 @@ export default class WikiDataManage extends Component {
         // websocket onopen event listener
         ws.onopen = () => {
             
-            this.toggleConnectWs.bind(this,true);
+            this.toggleConnectWs(true);
             console.log("connected websocket WikiData component");
             ws.send('ner-incremental-local');
-            this.setState({ ws: ws });
+            this.setState({ ws: ws});
+
             connectedTime = Date.now();
             that.timeout = 250; // reset timer to 250 on open of websocket connection 
             clearTimeout(connectInterval); // clear Interval on on open of websocket connection
@@ -94,7 +95,7 @@ export default class WikiDataManage extends Component {
 
         // websocket onclose event listener
         ws.onclose = e => {
-            this.toggleConnectWs.bind(this,false);
+            this.toggleConnectWs(false);
 
             console.log(
                 `Socket is closed. Reconnect will be attempted in ${Math.min(
@@ -110,7 +111,7 @@ export default class WikiDataManage extends Component {
         // websocket onerror event listener
         ws.onerror = err => {
 
-            this.toggleConnectWs.bind(this,false);
+            this.toggleConnectWs(false);
 
             console.error(
                 "Socket encountered error: ",
@@ -165,7 +166,7 @@ export default class WikiDataManage extends Component {
                 <CRow>
                     <CCol sm="5">
                         <h4 className="text-body">Entity management</h4>
-                        <Spin spinning={this.state.connectedWS}>
+                        <Spin spinning={!this.state.connectedWS}>
                             <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to Kafka Websocket"}</CBadge>
                         </Spin>
                     </CCol>
