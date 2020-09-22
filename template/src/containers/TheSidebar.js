@@ -27,11 +27,11 @@ const TheSidebar = () => {
       onShowChange={(val) => dispatch({type: 'set', sidebarShow: val })}
     >
       <CSidebarBrand className="d-md-down-none" to="/">
-        <CIcon
-          className="c-sidebar-brand-full"
-          name="logo-negative"
-          height={35}
-        />
+        <b>
+          <img src="https://stc-ki-ki.zdn.vn/template/adminmart/assets/images/logo-icon.jpg" height={35}/>
+        </b>
+          <img src="https://stc-ki-ki.zdn.vn/template/adminmart/assets/images/logo-text-ki-ki.png" height={35}/>
+       
         <CIcon
           className="c-sidebar-brand-minimized"
           name="sygnet"

@@ -7,16 +7,6 @@ export default [
   },
   {
     _tag: 'CSidebarNavItem',
-    name: 'Spelling Correction',
-    to: '/spelling',
-    icon: 'cil-speedometer',
-    badge: {
-      color: 'success',
-      text: 'NEW'
-    }
-  },
-  {
-    _tag: 'CSidebarNavItem',
     name: 'Wikidata',
     to: '/wikidata',
     icon: 'cil-speedometer',
