@@ -21,13 +21,15 @@ import CIcon from '@coreui/icons-react';
 import ReactJson from 'react-json-view'
 
 
-export default class WikiDataKafka extends Component {
-    constructor() {
-        super()
+export default class WikiDataManage extends Component {
+    constructor(props) {
+        super(props)
         this.state = {
             connectedWS: false,
             ws: null,
 
+
+            // kafka variables
             deletedItems: [],
             addItems: [],
             viewNewEntity: false,
@@ -58,6 +60,11 @@ export default class WikiDataKafka extends Component {
         console.log(boo);
         this.setState( {connectedWS: boo});
     }
+
+    fetch_wiki_data() {
+        const {fetch_wiki_data, params} = this.props;
+        fetch_wiki_data(params);
+    }
     
     timeout = 250; // Initial timeout duration as a class variable
 
@@ -71,6 +78,8 @@ export default class WikiDataKafka extends Component {
         let that = this; // cache the this
         var connectInterval;
 
+        var connectedTime;
+
         // websocket onopen event listener
         ws.onopen = () => {
             
@@ -78,6 +87,7 @@ export default class WikiDataKafka extends Component {
             console.log("connected websocket WikiData component");
             ws.send('ner-incremental-local');
             this.setState({ ws: ws });
+            connectedTime = Date.now();
             that.timeout = 250; // reset timer to 250 on open of websocket connection 
             clearTimeout(connectInterval); // clear Interval on on open of websocket connection
         };
@@ -113,7 +123,7 @@ export default class WikiDataKafka extends Component {
 
         // websocket on message
         ws.onmessage = (e) => {
-            console.log(e.data);
+            // console.log(e.data);
             var data = JSON.parse(e.data);
 
             switch(data.actionType) {
@@ -122,10 +132,14 @@ export default class WikiDataKafka extends Component {
                     break;
                 case "ADD": 
                     this.setState({ addItems : [...this.state.addItems, data]});
+                    // this.
                     break;
                 default: 
                     break;
             }
+
+            if(data && data.time > connectedTime)
+                this.fetch_wiki_data();
         }
     };
 
@@ -163,32 +177,10 @@ export default class WikiDataKafka extends Component {
                         >
                             <CDropdownToggle className="c-header-nav-link" caret={false}>
                                 <CIcon name="cil-bell"/>
-                                <CBadge shape="pill" color="danger">{itemsCount}</CBadge>
+                                <CBadge shape="pill" color="danger">{this.state.addItems.length + this.state.deletedItems.length}</CBadge>
                             </CDropdownToggle>
                             <CDropdownMenu  placement="bottom-end" className="pt-0">
 
-                                {/* Delete */}
-                                <CDropdownItem
-                                    header
-                                    tag="div"
-                                    className="text-center"
-                                    color="light"
-                                >
-                                    <strong>You have {this.state.deletedItems.length} new deletes</strong>
-                                </CDropdownItem>
-
-                                {this.state.deletedItems
-                                            .map(i => 
-                                                    <CDropdownItem>
-                                                        <CRow>
-                                                            <CIcon name="cil-trash" className="mr-2 text-danger" />
-                                                            <div className="text-uppercase mb-1">{i.entityID}</div>
-                                                            <small className="text-muted">Time:{this.timeStampsToDate(i.time)}</small>
-                                                        </CRow>
-                                                    </CDropdownItem>)}
-
-
-                                                    {/* <CDropdownMenu  placement="bottom-end" className="pt-0"> */}
 
                                 {/* ADD */}
                                 <CDropdownItem
@@ -201,6 +193,7 @@ export default class WikiDataKafka extends Component {
                                 </CDropdownItem>
 
                                 {this.state.addItems
+                                            .sort(function(a,b){return b.time - a.time})
                                             .map((i,index) => 
                                                     <CDropdownItem>
                                                         <CRow onClick={this.toggleViewNewEntity.bind(this, index)}>
@@ -208,10 +201,39 @@ export default class WikiDataKafka extends Component {
                                                             <div className="text-uppercase mb-1">{i.type}</div>
                                                             <small className="text-muted">{this.timeStampsToDate(i.time) ? "Time: " + this.timeStampsToDate(i.time): ""}</small>
                                                         </CRow>
+                                                </CDropdownItem>)}
+
+                                {/* Delete */}
+                                <CDropdownItem
+                                    header
+                                    tag="div"
+                                    className="text-center"
+                                    color="light"
+                                >
+                                    <strong>You have {this.state.deletedItems.length} new deletes</strong>
+                                </CDropdownItem>
+
+                                {this.state.deletedItems
+                                            .filter(i => i.time)
+                                            .sort(function(a,b){return b.time - a.time})
+                                            .map(i => 
+                                                    <CDropdownItem>
+                                                        <CRow>
+                                                            <CIcon name="cil-trash" className="mr-2 text-danger" />
+                                                            <div className="text-uppercase mb-1">{i.entityID}</div>
+                                                            <small className="text-muted">Time:{this.timeStampsToDate(i.time)}</small>
+                                                        </CRow>
                                                     </CDropdownItem>)}
+
+
+                                                    {/* <CDropdownMenu  placement="bottom-end" className="pt-0"> */}
+
+                                
                                 {/* </CDropdownMenu> */}
                             </CDropdownMenu>
                         </CDropdown>
+
+                        <CButton color={"info"} className="float-right" onClick={this.fetch_wiki_data.bind(this)}>Refresh</CButton>
                     </CCol>
                 </CRow>
 

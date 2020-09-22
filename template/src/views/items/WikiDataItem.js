@@ -48,7 +48,7 @@ export default class WikiDataItem extends Component {
 
     timeStampsToDate(timeStamp){
         var d = new Date(timeStamp);
-        return d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear();
+        return d.getDate() + '/' + (d.getMonth()+1) + '/' + d.getFullYear() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
     }
 
     badges(typeArray, color) {
@@ -88,17 +88,23 @@ export default class WikiDataItem extends Component {
         const {laban_wiki_base_item_url, item} = this.state
         const {wikidata_id, aliases, page_view, title, type, created_time, updated_time} = item
 
+        const time = updated_time ? updated_time : created_time;
 
-
+        // time diff 7 days in millis
+        const time_diff = 604800000;
         return (
             <React.Fragment>
                 <tr key={wikidata_id}>
-                    <td><p><a href={laban_wiki_base_item_url} target="_blank" style={{ color: '#8A2BE2' }}>{wikidata_id}</a></p></td>
+                    <td><p><a href={laban_wiki_base_item_url} target="_blank" style={{ color: '#8A2BE2' }}>{wikidata_id}</a></p>
+                        {Date.now() - time < time_diff && this.badges(["new"], 'light-purple')}
+                    
+                    </td>
+                                    
                     <td>{this.badges(type, 'success')}</td>
                     <td className="text-muted">{title}</td>
                     <td>{this.badges(aliases, 'blue')}</td>
                     <td>{page_view}</td>
-                    <td>{updated_time ? this.timeStampsToDate(updated_time) : this.timeStampsToDate(created_time)}</td>
+                    <td>{this.timeStampsToDate(time)}</td>
                     <td style={{width: "10%"}}>   
                         <CButton
                             className="btn btn-sm btn-outline-success"

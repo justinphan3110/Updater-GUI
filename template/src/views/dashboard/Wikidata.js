@@ -20,7 +20,7 @@ CCallout
 
 import axios from 'axios';
 import WikiDataItem from '../items/WikiDataItem';
-import WikiDataKafka from '../../websockets/WikiDataKafka';
+import WikiDataManage from '../../manage/WikiDataManage';
 
 
 
@@ -29,7 +29,13 @@ export default class Wikidata extends Component {
         super()
 
         this.state = {
-            data: [], 
+            data: [],
+            
+            // fetch wikidata
+            page: 1,
+            sort: 'DEFAULT',
+            type: '',
+            q: ''
         }
 
         this.removeEntity = this.removeEntity.bind(this)
@@ -37,13 +43,9 @@ export default class Wikidata extends Component {
 
 
     componentDidMount() {
-        const params ={ 
-            type: '', 
-            q: '',
-            page: 1,
-            sort: 'DEFAULT',
-        }
-        this.fetch_wiki_data(params);
+        const {type, page, sort, q} = this.state;
+
+        this.fetch_wiki_data({type, page, sort, q});
     }
 
     componentDidUpdate(prevProps, prevStates) {
@@ -52,6 +54,10 @@ export default class Wikidata extends Component {
                 data: this.state.data
             })
         }
+    }
+
+    setPage(page) {
+        this.setState({page: page});
     }
 
     fetch_wiki_data(params) {
@@ -89,6 +95,9 @@ export default class Wikidata extends Component {
                     item={item}/>
         })
 
+        const {type, page, sort, q} = this.state;
+        const params = {type, page, sort, q};
+
 
 
         return (
@@ -104,7 +113,8 @@ export default class Wikidata extends Component {
             <CCol>
             <CCard>
                 <CCardHeader>
-                <WikiDataKafka/>
+                <WikiDataManage fetch_wiki_data={this.fetch_wiki_data.bind(this)} 
+                                params={params}/>
                 </CCardHeader>
                 <CCardBody>
                 <br />
