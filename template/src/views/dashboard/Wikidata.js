@@ -1,26 +1,18 @@
 import React, { Component } from 'react'
-import {
-    Col,
-    Row,
-  } from 'reactstrap';
 
 import {
-CBadge,
-CButton,
-CButtonGroup,
 CCard,
 CCardBody,
-CCardFooter,
 CCardHeader,
 CCol,
-CProgress,
 CRow,
-CCallout
+
 } from '@coreui/react'
 
 import axios from 'axios';
 import WikiDataItem from '../items/WikiDataItem';
 import WikiDataManage from '../../manage/WikiDataManage';
+import WikiDataUpdater from '../../manage/WikiDataUpdater';
 
 
 
@@ -109,12 +101,17 @@ export default class Wikidata extends Component {
                 </CRow>
             <br/>
             
+            <WikiDataUpdater/>
+
+        
+
             <CRow>
             <CCol>
             <CCard>
                 <CCardHeader>
-                <WikiDataManage fetch_wiki_data={this.fetch_wiki_data.bind(this)} 
-                                params={params}/>
+                    <WikiDataManage header={'Entity Management'}
+                                    fetch_wiki_data={this.fetch_wiki_data.bind(this)} 
+                                    params={params}/>
                 </CCardHeader>
                 <CCardBody>
                 <br />
@@ -141,7 +138,7 @@ export default class Wikidata extends Component {
             </CCard>
             </CCol>
         </CRow>
-              
+        
 
                 
             </div>

@@ -9,13 +9,22 @@ export default [
     _tag: 'CSidebarNavItem',
     name: 'Wikidata',
     to: '/wikidata',
-    icon: 'cil-speedometer',
+    icon: 'cil-book',
     badge: {
       color: 'success',
       text: 'NEW'
     }
   },
-
+  {
+    _tag: 'CSidebarNavItem',
+    name: 'Football',
+    to: '/football',
+    icon: 'cil-football',
+    badge: {
+      color: 'success',
+      text: 'NEW'
+    }
+  },
 
 
 

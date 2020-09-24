@@ -73,7 +73,7 @@ export default class WikiDataManage extends Component {
      * This function establishes the connect with the websocket and also ensures constant reconnection if connection closes
      */
     connect = () => {
-        var url = process.env.REACT_APP_HOST + ":" + process.env.REACT_APP_KAFKA_CONSUMER_PORT + process.env.REACT_APP_KAFKA_CONSUMER_ROUTE;
+        var url = process.env.REACT_APP_HOST + ":" + process.env.REACT_APP_KAFKA_CONSUMER_PORT + process.env.REACT_APP_KAFKA_CONSUMER_ROUTE + "/wikidata";
         var ws = new WebSocket("ws://" + url);
         let that = this; // cache the this
         var connectInterval;
@@ -139,7 +139,8 @@ export default class WikiDataManage extends Component {
                     break;
             }
 
-            if(data && data.time > connectedTime)
+            if(data
+                && data.time > connectedTime)
                 this.fetch_wiki_data();
         }
     };
@@ -165,7 +166,7 @@ export default class WikiDataManage extends Component {
             <React.Fragment>
                 <CRow>
                     <CCol sm="5">
-                        <h4 className="text-body">Entity management</h4>
+                        <h4 className="text-body">{this.props.header}</h4>
                         <Spin spinning={!this.state.connectedWS}>
                             <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to Kafka Websocket"}</CBadge>
                         </Spin>

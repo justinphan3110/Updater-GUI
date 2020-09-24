@@ -26,7 +26,7 @@ import React from 'react';
 // const Buttons = React.lazy(() => import('./views/buttons/buttons/Buttons'));
 // const Charts = React.lazy(() => import('./views/charts/Charts'));
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'));
-// const Starter = React.lazy(() => import('./views/dashboard/Starter'));
+const Football = React.lazy(() => import('./views/dashboard/Football'));
 const Wikidata = React.lazy(() => import('./views/dashboard/Wikidata'));
 // const CoreUIIcons = React.lazy(() => import('./views/icons/coreui-icons/CoreUIIcons'));
 // const Flags = React.lazy(() => import('./views/icons/flags/Flags'));
@@ -43,7 +43,7 @@ const Wikidata = React.lazy(() => import('./views/dashboard/Wikidata'));
 const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', component: Dashboard },
-  // { path: '/spelling', name: 'Vietnamese Spelling Correction', component: Starter}, 
+  { path: '/football', name: 'Football', component: Football}, 
   { path: '/wikidata', name: 'Wikidata', component: Wikidata}, 
   // { path: '/theme', name: 'Theme', component: Colors, exact: true },
   // { path: '/theme/colors', name: 'Colors', component: Colors },

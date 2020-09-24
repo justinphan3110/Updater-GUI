@@ -1,0 +1,10 @@
+
+kafka-nodejs/node_modules/.bin/
+
+kafka-nodejs/node_modules/\@opencensus/core/build/src/common/
+
+kafka-nodejs/node_modules/\@opencensus/core/build/src/exporters/
+
+kafka-nodejs/node_modules/\@opencensus/core/node_modules/semver/
+
+kafka-nodejs/package-lock.json
