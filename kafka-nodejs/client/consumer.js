@@ -26,8 +26,8 @@ router.get('/football/leagueIDs', async (req, res) => {
   res.json({'leagueIDs': footballLeagueIds})
 })
 
-router.ws('/football/match', async (ws,req) =>{
-  console.log(ws.readyState);
+router.ws('/football/:type', async (ws,req) =>{
+  const type = req.params.type
   
   try {
     ws.on('message', function(msg) {
@@ -44,7 +44,7 @@ router.ws('/football/match', async (ws,req) =>{
                 // console.log(message.value.toString());
                 const m = JSON.parse(message.value.toString());
                 // get message related to football match
-                if(m.entityType !== 'football' || m.type !== 'match')
+                if(m.entityType !== 'football' || m.type !== type)
                   return;
 
                 try {
@@ -65,8 +65,6 @@ router.ws('/football/match', async (ws,req) =>{
     console.log("some error")
   }
 })
-
-
 
 router.ws('/wikidata', async (ws,req) =>{
     console.log(ws.readyState);
