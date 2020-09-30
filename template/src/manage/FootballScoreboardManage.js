@@ -136,7 +136,6 @@ export default class FootballScoreboardManage extends Component {
             var data = JSON.parse(e.data);
             loadingMatches.push(data);
 
-            // this.loadingMatchesIntoComponentMatches(loadingMatches);
             this.setState({ places: [...this.state.places, data]})
         }
     };
@@ -203,7 +202,6 @@ export default class FootballScoreboardManage extends Component {
 
     viewJson(filteredMatches) {
         Modal.info({
-        //   title: 'Json for football matches',
           content: (
             <ReactJson collapsed src={filteredMatches} theme="shapeshifter:inverted" iconStyle="triangle" />
           ),
@@ -258,7 +256,7 @@ export default class FootballScoreboardManage extends Component {
                                 </a>
                             </td>
                             <td>
-                                <CBadge style={{fontSize: 16}} color="light">{i.place.group}</CBadge>
+                                {i.place.group !== 'Z' && <CBadge style={{fontSize: 16}} color="light">{i.place.group}</CBadge>}
                             </td>
                             <td>
                                 <CBadge style={{fontSize: 16}} color="light">{i.place.matches}</CBadge>
@@ -279,7 +277,7 @@ export default class FootballScoreboardManage extends Component {
                                 <CBadge style={{fontSize: 16}} color="light">{i.place.GA}</CBadge>
                             </td>
                             <td>
-                                <CBadge style={{fontSize: 16}} color="success">{i.place.points}</CBadge>
+                                <CBadge style={{fontSize: 16}} color="primary">{i.place.points}</CBadge>
                             </td>
                             <td>
                                 <CBadge style={{fontSize: 16}} color="secondary">{i.place.season}</CBadge>
