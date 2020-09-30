@@ -36,12 +36,12 @@ export default class WikiDataManage extends Component {
             viewIndex: undefined,
 
         }
+        this.fetch_wiki_data = this.fetch_wiki_data.bind(this)
     }
 
     componentDidMount() {
         this.connect();
 
-        console.log(this.state.deletedItems);
     }
 
     componentDidUpdate(prevProps, prevStates) {
@@ -85,7 +85,7 @@ export default class WikiDataManage extends Component {
             
             this.toggleConnectWs(true);
             console.log("connected websocket WikiData component");
-            ws.send('ner-incremental-local');
+            ws.send(process.env.REACT_APP_KAFKA_TOPIC);
             this.setState({ ws: ws});
 
             connectedTime = Date.now();
@@ -168,7 +168,7 @@ export default class WikiDataManage extends Component {
                     <CCol sm="5">
                         <h4 className="text-body">{this.props.header}</h4>
                         <Spin spinning={!this.state.connectedWS}>
-                            <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to Kafka Websocket"}</CBadge>
+                            <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to WikiData Kafka Consumer Websocket"}</CBadge>
                         </Spin>
                     </CCol>
 
@@ -197,7 +197,7 @@ export default class WikiDataManage extends Component {
                                 {this.state.addItems
                                             .sort(function(a,b){return b.time - a.time})
                                             .map((i,index) => 
-                                                    <CDropdownItem>
+                                                    <CDropdownItem key={Math.random()}>
                                                         <CRow onClick={this.toggleViewNewEntity.bind(this, index)}>
                                                             <CIcon name="cil-user-follow" className="mr-2 text-success" />
                                                             <div className="text-uppercase mb-1">{i.type}</div>
@@ -219,7 +219,7 @@ export default class WikiDataManage extends Component {
                                             .filter(i => i.time)
                                             .sort(function(a,b){return b.time - a.time})
                                             .map(i => 
-                                                    <CDropdownItem>
+                                                    <CDropdownItem key={Math.random()}>
                                                         <CRow>
                                                             <CIcon name="cil-trash" className="mr-2 text-danger" />
                                                             <div className="text-uppercase mb-1">{i.entityID}</div>
@@ -250,6 +250,7 @@ export default class WikiDataManage extends Component {
                     </CModalTitle>
                 </CModalHeader>
                 <CModalBody>
+                    {/* <h1>{this.state.viewIndex}</h1> */}
                     <ReactJson src={this.state.addItems[this.state.viewIndex]} theme="summerfruit:inverted" iconStyle="triangle" />
                 </CModalBody>
                 <CModalFooter>

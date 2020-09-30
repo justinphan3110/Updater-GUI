@@ -5,14 +5,28 @@ const expressWs = require('express-ws')(app);
 const config = require('../utils/config');
 const router = express.Router();
 
+const fs = require('fs');
+const path = require('path');
+const csv = require('fast-csv');
 
 const kafka = new Kafka({
   clientId: 'kafka-node-app',
   brokers: [config.kafka_host+':'+config.kafka_broker1_port]
 })
 
+var footballLeagueIds = []
+fs.createReadStream(path.resolve('', 'data', 'startseite_wettbewerb.csv'))
+    .pipe(csv.parse({ headers: true }))
+    .on('error', (error) => console.error("League Id File not found: Looking for startseite_wettbewerb.csv"))
+    .on('data', (row) => footballLeagueIds.push(row.transfermarktLeagueID))
+    .on('end', (rowCount) => console.log(`Parsed ${rowCount} football league IDs`))
 
-router.ws('/football', async (ws,req) =>{
+
+router.get('/football/leagueIDs', async (req, res) => {
+  res.json({'leagueIDs': footballLeagueIds})
+})
+
+router.ws('/football/match', async (ws,req) =>{
   console.log(ws.readyState);
   
   try {
@@ -20,13 +34,19 @@ router.ws('/football', async (ws,req) =>{
       const sub = async (topicName) =>{
         const consumer = kafka.consumer({ groupId: "node-js-consumer" + Math.random(), memberId: "kafka-node-app"});
         await consumer.connect();
-        await consumer.subscribe({topic: "ner-incremental-local", fromBeginning: true});
+        await consumer.subscribe({topic: "ner-incremental-local", fromBeginning: true, offset: 100});
         
         try {
           await consumer.run(
             { 
 
               eachMessage: async ({topic, partition, message}) => {
+                // console.log(message.value.toString());
+                const m = JSON.parse(message.value.toString());
+                // get message related to football match
+                if(m.entityType !== 'football' || m.type !== 'match')
+                  return;
+
                 try {
                   ws.send(message.value.toString());
                 } catch (error) {
@@ -63,6 +83,12 @@ router.ws('/wikidata', async (ws,req) =>{
               { 
 
                 eachMessage: async ({topic, partition, message}) => {
+                  // console.log(message.value.toString());
+                  const m = JSON.parse(message.value.toString());
+                  // get message related to wiki
+                  if(m.entityType !== 'wiki')
+                    return;
+
                   try {
                     ws.send(message.value.toString());
                   } catch (error) {

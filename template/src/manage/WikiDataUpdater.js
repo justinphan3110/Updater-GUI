@@ -36,15 +36,13 @@ export default class WikiDataUpdater extends Component {
             deletedItems: [],
             addItems: [],
             viewNewEntity: false,
-            viewIndex: undefined,
+            viewItem: undefined,
 
         }
     }
 
     componentDidMount() {
         this.connect();
-
-        console.log(this.state.deletedItems);
     }
 
     componentDidUpdate(prevProps, prevStates) {
@@ -55,8 +53,9 @@ export default class WikiDataUpdater extends Component {
         }
     }
 
-    toggleViewNewEntity(index) {
-        this.setState( { viewNewEntity: ! this.state.viewNewEntity, viewIndex: index});
+    toggleViewNewEntity(item) {
+        // console.log('index ', item);
+        this.setState( { viewNewEntity: ! this.state.viewNewEntity, viewItem: item});
     }
 
     toggleConnectWs(boo) {
@@ -84,7 +83,7 @@ export default class WikiDataUpdater extends Component {
             
             this.toggleConnectWs(true);
             console.log("connected websocket WikiData component");
-            ws.send('ner-incremental-local');
+            ws.send(process.env.REACT_APP_KAFKA_TOPIC);
             this.setState({ ws: ws});
 
             connectedTime = Date.now();
@@ -163,7 +162,7 @@ export default class WikiDataUpdater extends Component {
             .filter(i => i.time)
             .sort(function(a,b){return b.time - a.time})
             .map((i, index) => 
-                        <tr key={Math.random} onClick={this.toggleViewNewEntity.bind(this, index)}>
+                        <tr key={Math.random()} onClick={this.toggleViewNewEntity.bind(this, i)}>
                             <td><CBadge color="success">{i.type}</CBadge></td>
                             <td>
                                 <CRow>
@@ -185,7 +184,7 @@ export default class WikiDataUpdater extends Component {
             .filter(i => i.time)
             .sort(function(a,b){return b.time - a.time})
             .map((i, index) => 
-                <tr key={Math.random}>
+                <tr key={Math.random()}>
                     <td>
                         <CRow>
                                                                     <CIcon name="cil-trash" className="mr-2 text-danger" />
@@ -247,7 +246,7 @@ export default class WikiDataUpdater extends Component {
                                 </CModalTitle>
                             </CModalHeader>
                             <CModalBody>
-                                <ReactJson src={this.state.addItems[this.state.viewIndex]} theme="summerfruit:inverted" iconStyle="triangle" />
+                                <ReactJson src={this.state.viewItem} theme="summerfruit:inverted" iconStyle="triangle" />
                             </CModalBody>
                             <CModalFooter>
                                 <CButton color="secondary" onClick={this.toggleViewNewEntity.bind(this)}>close</CButton>
@@ -282,7 +281,7 @@ export default class WikiDataUpdater extends Component {
                                     <CCol sm="5">
                                         <h4 className="text-body">{'Deleted Items'}</h4>
                                         <Spin spinning={!this.state.connectedWS}>
-                                            <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to Kafka Websocket"}</CBadge>
+                                            <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to WikiData Kafka Consumer Websocket"}</CBadge>
                                         </Spin>
                                     </CCol>
                                 </CRow>

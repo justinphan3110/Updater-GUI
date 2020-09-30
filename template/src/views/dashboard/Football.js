@@ -20,21 +20,35 @@ import axios from 'axios';
 import WikiDataItem from '../items/WikiDataItem';
 import WikiDataManage from '../../manage/WikiDataManage';
 import FootballMatchTable from '../../components/FootballMatchTable';
+import FootballMatchManage from '../../manage/FootballMatchManage';
 
 export default class Football extends Component {
-    constructor() {
-        super()
+    constructor(props) {
+        super(props)
 
         this.state = {
             data: [],
-            
-            // fetch wikidata
-            page: 1,
-            sort: 'DEFAULT',
-            type: '',
-            q: ''
+            // NOTE may use later
+            leagueIDs: [],
         }
 
+    }
+
+    componentDidMount() {
+        this.fetchLeagueIDs();
+    }
+
+    fetchLeagueIDs() {
+        const url = "http://" + process.env.REACT_APP_HOST + ":" + process.env.REACT_APP_KAFKA_CONSUMER_PORT + process.env.REACT_APP_KAFKA_CONSUMER_ROUTE + "/football/leagueIDs";
+        axios.get(url).then((response) => {
+            console.log("fetch football league IDs data success");
+            this.setState( {
+                leagueIDs: response.data.leagueIDs
+            })
+
+        }).catch((error) => {
+            console.log("fetch football league IDs data failed")
+        });
     }
 
 
@@ -45,10 +59,6 @@ export default class Football extends Component {
                     removeEntity={this.removeEntity}
                     item={item}/>
         })
-
-        const {type, page, sort, q} = this.state;
-        const params = {type, page, sort, q};
-
 
 
         return (
@@ -63,9 +73,6 @@ export default class Football extends Component {
             <CCol>
 
             <CCard>
-                <CCardHeader>
-                <WikiDataManage/>
-                </CCardHeader>
                 <CCardBody>
                     <CTabs>
                     <CNav variant="tabs">
@@ -92,7 +99,7 @@ export default class Football extends Component {
                     </CNav>
                     <CTabContent>
                         <CTabPane>
-                            <FootballMatchTable/>
+                            <FootballMatchManage />
 
                         </CTabPane>
                         <CTabPane>
