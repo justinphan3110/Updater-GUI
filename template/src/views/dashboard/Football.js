@@ -21,6 +21,7 @@ import WikiDataItem from '../items/WikiDataItem';
 import WikiDataManage from '../../manage/WikiDataManage';
 import FootballMatchTable from '../../components/FootballMatchTable';
 import FootballMatchManage from '../../manage/FootballMatchManage';
+import FootballScoreboardManage from '../../manage/FootballScoreboardManage';
 
 export default class Football extends Component {
     constructor(props) {
@@ -103,7 +104,7 @@ export default class Football extends Component {
 
                         </CTabPane>
                         <CTabPane>
-                        {/* {`2. ${lorem}`} */}
+                            <FootballScoreboardManage />
                         </CTabPane>
                         <CTabPane>
                         {/* {`3. ${lorem}`} */}
