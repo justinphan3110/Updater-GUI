@@ -265,8 +265,9 @@ export default class FootballMatchManage extends Component {
         
         var filteredMatches = this.state.matches
                                 .filter(i => i.time && i.matchTime && i.leagueID && i.awayTeamID && i.homeTeamID)
-                                .filter(i => !filterByLeagueID || i.leagueID === filterByLeagueID); 
-                                
+                                .filter(i => !filterByLeagueID || i.leagueID === filterByLeagueID) 
+                                .filter(i => !filterByClubID || (i.homeTeamID === filterByClubID || i.awayTeamID === filterByClubID))
+
         const pageCount = Math.ceil(filteredMatches.length / this.state.numberPerPage);
         
         const clubs = this.uniqueArray(this.state.matches.flatMap(m => [[m.homeTeamLabel, m.homeTeamID], [m.awayTeamLabel, m.awayTeamID]]))
@@ -330,31 +331,28 @@ export default class FootballMatchManage extends Component {
                                             allowClear
                                             style={{ width: "40%" }}
                                             placeholder="Filter by League"
-                                            optionFilterProp="children"
                                             onChange={(v) => this.setState({filterByLeagueID: v, page: 1})}
-                                            // onChange={(v) => console.log(v)}
 
                                             filterOption={(input, option) =>
-                                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                                option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0 
+                                                || option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                             }
                                         >
-                                            {/* <Option key={"None"} value={undefined}>{"None"}</Option> */}
-                                            {leagues.map(l => <Option key={l[0]} value={l[1]}>{l[0]} <CBadge color="success">{l[1]}</CBadge></Option>)}
+                                            {leagues.map(l => <Option key={l[0]} value={l[1]}>{l[0]}<CBadge color="success">{l[1]}</CBadge></Option>)}
                                         </Select>
                                         <Select
                                             showSearch
                                             allowClear
                                             style={{ width: "40%", marginLeft: "2%" }}
                                             placeholder="Filter by Club"
-                                            optionFilterProp="children"
-                                                // onChange={(v) => this.setState({filterByClubID: v, page: 1})}
-                                            onChange={(v) => console.log(v)}
+                                            onChange={(v) => this.setState({filterByClubID: v, page: 1})}
                                             filterOption={(input, option) =>
-                                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                                option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0 
+                                                || option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                             }
                                         >
                                             {/* <Option key={"None"} value={undefined}>{"None"}</Option> */}
-                                            {clubs.map(l => <Option key={l[0]} value={l[0]}>{l[0]} <CBadge color="success">{l[1]}</CBadge></Option>)}
+                                            {clubs.map(l => <Option key={l[0]} value={l[1]}>{l[0]} <CBadge color="success">{l[1]}</CBadge></Option>)}
                                         </Select>
                                 </CRow>
                             </CCardHeader>
