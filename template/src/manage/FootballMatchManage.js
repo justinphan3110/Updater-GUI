@@ -1,7 +1,7 @@
 // import React, { Component } from 'react'
 import React, { Component, useState, useEffect } from 'react';
 import { Spin, Alert } from 'antd';
-import { Select } from 'antd';
+import { Select, Button, Modal } from 'antd';
 import {
     Pagination, PaginationItem, PaginationLink,
   } from 'reactstrap';
@@ -10,18 +10,13 @@ import {
     CBadge,
     CCol,
     CRow,    
-    // CButton, 
-    // CNavItem,
-    // CNavLink,
-    // CTabPane,
-    // CNav,
-    // CTabContent,
-    // CTabs,
-    // CModal,
-    // CModalHeader,
-    // CModalTitle,
-    // CModalBody,
-    // CModalFooter,
+    CButton, 
+
+    CModal,
+    CModalHeader,
+    CModalTitle,
+    CModalBody,
+    CModalFooter,
         CCard,
     CCardBody,
     CCardHeader,
@@ -48,7 +43,7 @@ export default class FootballMatchManage extends Component {
             // loadingMatches: [],
             // viewMatches: [],
 
-            viewMatch: false,       
+            viewJson: false,       
             viewItem: undefined,
 
             // react pagination
@@ -239,6 +234,18 @@ export default class FootballMatchManage extends Component {
         })
     }
 
+    viewJson(filteredMatches) {
+        Modal.info({
+        //   title: 'Json for football matches',
+          content: (
+            <ReactJson collapsed src={filteredMatches} theme="shapeshifter:inverted" iconStyle="triangle" />
+          ),
+          style:({top: "20%"}), width: 1000,
+          onOk() {},
+        });
+    }
+  
+
     uniqueArray(arr) {
         var uniques = [];
         var itemsFound = {};
@@ -324,9 +331,11 @@ export default class FootballMatchManage extends Component {
                                 </CRow>
                                 <CRow style={{marginTop: "2%"}}>
                                     {this.paginationsGenerate(pageCount)}
+                                    
                                 </CRow>
                                 <CRow>
                                         <Select
+                                            size="large"
                                             showSearch
                                             allowClear
                                             style={{ width: "40%" }}
@@ -340,7 +349,9 @@ export default class FootballMatchManage extends Component {
                                         >
                                             {leagues.map(l => <Option key={l[0]} value={l[1]}>{l[0]}<CBadge color="success">{l[1]}</CBadge></Option>)}
                                         </Select>
+
                                         <Select
+                                            size="large"
                                             showSearch
                                             allowClear
                                             style={{ width: "40%", marginLeft: "2%" }}
@@ -354,6 +365,21 @@ export default class FootballMatchManage extends Component {
                                             {/* <Option key={"None"} value={undefined}>{"None"}</Option> */}
                                             {clubs.map(l => <Option key={l[0]} value={l[1]}>{l[0]} <CBadge color="success">{l[1]}</CBadge></Option>)}
                                         </Select>
+
+                                        <Button style={{marginLeft:"10%"}} onClick={() => this.viewJson(filteredMatches)} danger color="info">View JSON</Button>
+                                        {/* <Modal 
+                                            // className="modal-lg"
+                                            title="Json for new matches"
+                                            // style={{width: "300%"}}
+                                            visible={this.state.viewJson} 
+                                            onOk={this.viewJsonToggle.bind(this)}
+                                            // color="info"
+                                            // centered
+                                        >
+                                            <ReactJson collapsed src={filteredMatches} theme="twilight" iconStyle="triangle" />
+                                        </Modal> */}
+
+                                       
                                 </CRow>
                             </CCardHeader>
 
