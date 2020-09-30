@@ -1,5 +1,5 @@
 // import React, { Component } from 'react'
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component } from 'react';
 import { Spin, Alert } from 'antd';
 import { Select, Button, Modal } from 'antd';
 import {
@@ -10,14 +10,7 @@ import {
     CBadge,
     CCol,
     CRow,    
-    CButton, 
-
-    CModal,
-    CModalHeader,
-    CModalTitle,
-    CModalBody,
-    CModalFooter,
-        CCard,
+    CCard,
     CCardBody,
     CCardHeader,
 } from '@coreui/react';
@@ -33,11 +26,14 @@ export default class FootballMatchManage extends Component {
         this.state = {
             connectedWS: false,
             ws: null,
+            connectedTime: undefined,
 
 
             // kafka variables
             // deletedItems: [],
             matches: [],
+            time: 0,
+            
             filterByLeagueID: undefined,
             filterByClubID: undefined,
             // loadingMatches: [],
@@ -52,26 +48,30 @@ export default class FootballMatchManage extends Component {
             page: 1,
 
         }
+
+
     }
 
+    timerId = null;
     
-
     componentDidMount() {
+        this.timerId = setInterval(() => {
+            this.setState((prevState) => ({ time: prevState.time + 0.1 }));
+        }, 100);
+
         this.connect();
+        // this.update();
     }
 
     componentWillMount() {
+        clearInterval(this.timerId);
         this.state.ws && this.state.ws.close();
     }
 
 
     componentDidUpdate(prevProps, prevStates) {
-
-        if(this.state.matches !== prevStates.matches) {
-            // console.log("here   ")
-            this.setState({
-                matches: this.state.matches
-            })
+        if(this.state.time !== prevStates.time) {
+                this.setState({matches: [...this.state.matches, ...this.list]}, () => this.list = [])
         }
     }
 
@@ -90,13 +90,13 @@ export default class FootballMatchManage extends Component {
      * @function connect
      * This function establishes the connect with the websocket and also ensures constant reconnection if connection closes
      */
-    connect = () => {
+    list = []
+    connect() {
         var url = process.env.REACT_APP_HOST + ":" + process.env.REACT_APP_KAFKA_CONSUMER_PORT + process.env.REACT_APP_KAFKA_CONSUMER_ROUTE + "/football/match";
         var ws = new WebSocket("ws://" + url);
         let that = this; // cache the this
         var connectInterval;
 
-        var connectedTime;
 
         // websocket onopen evefalsent listener
         ws.onopen = () => {
@@ -104,9 +104,8 @@ export default class FootballMatchManage extends Component {
             this.toggleConnectWs(true);
             console.log("connected websocket Football Match component");
             ws.send(process.env.REACT_APP_KAFKA_TOPIC);
-            this.setState({ ws: ws});
+            this.setState({ ws: ws, connectedTime: Date.now()});
 
-            connectedTime = Date.now();
             that.timeout = 250; // reset timer to 250 on open of websocket connection 
             clearTimeout(connectInterval); // clear Interval on on open of websocket connection
         };
@@ -140,17 +139,13 @@ export default class FootballMatchManage extends Component {
             ws.close();
         };
 
-        let loadingMatches = [];
         // websocket on message
         ws.onmessage = (e) => {
-            // console.log(e.data);
             var data = JSON.parse(e.data);
-            loadingMatches.push(data);
-
-            // this.loadingMatchesIntoComponentMatches(loadingMatches);
-            this.setState({ matches: [...this.state.matches, data]})
+            this.list.push(data);
         }
     };
+
 
     /**
      * utilited by the @function connect to check if the connection is close, if so attempts to reconnect
@@ -239,9 +234,8 @@ export default class FootballMatchManage extends Component {
     render() {
         const { Option } = Select;
 
-
         // time diff 3 days in millis
-        const {numberPerPage, page, filterByClubID, filterByLeagueID} = this.state
+        const {numberPerPage, page, filterByClubID, filterByLeagueID, connectedTime} = this.state
         const time_diff = 259200000;  
         
         var filteredMatches = this.state.matches
@@ -283,7 +277,7 @@ export default class FootballMatchManage extends Component {
                             </td>
                             <td>
                                 {this.timeStampsToDate(i.time) ? this.timeStampsToDate(i.time): ""}
-                                {Date.now() - i.time < time_diff && <CBadge style={{marginLeft:"2%"}} color="light-purple">New</CBadge>}
+                                {connectedTime < i.time && <CBadge style={{marginLeft:"2%"}} color="light-purple">New</CBadge>}
                             </td>
                         </tr>
         );
@@ -359,7 +353,9 @@ export default class FootballMatchManage extends Component {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {viewMatches}
+                                    {/* <Suspense> */}
+                                        {viewMatches}
+                                {/* </Suspense> */}
                                 </tbody>
                             </table>
 

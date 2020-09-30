@@ -33,11 +33,15 @@ export default class FootballScoreboardManage extends Component {
         this.state = {
             connectedWS: false,
             ws: null,
+            connectedTime: undefined,
+
 
 
             // kafka variables
             // deletedItems: [],
             places: [],
+            time: 0,
+
             filterByLeagueID: undefined,
             filterByClubID: undefined,
             // loadingMatches: [],
@@ -54,14 +58,25 @@ export default class FootballScoreboardManage extends Component {
         }
     }
 
-    
+    timerId = null;
 
     componentDidMount() {
+        this.timerId = setInterval(() => {
+            this.setState((prevState) => ({ time: prevState.time + 0.1 }));
+        }, 100);
+
         this.connect();
     }
 
     componentWillMount() {
+        clearInterval(this.timerId);
         this.state.ws && this.state.ws.close();
+    }
+
+    componentDidUpdate(prevProps, prevStates) {
+        if(this.state.time !== prevStates.time) {
+                this.setState({places: [...this.state.places, ...this.list]}, () => this.list = [])
+        }
     }
 
     toggleViewNewEntity(item) {
@@ -79,13 +94,12 @@ export default class FootballScoreboardManage extends Component {
      * @function connect
      * This function establishes the connect with the websocket and also ensures constant reconnection if connection closes
      */
+    list = []
     connect = () => {
         var url = process.env.REACT_APP_HOST + ":" + process.env.REACT_APP_KAFKA_CONSUMER_PORT + process.env.REACT_APP_KAFKA_CONSUMER_ROUTE + "/football/scoreboard";
         var ws = new WebSocket("ws://" + url);
         let that = this; // cache the this
         var connectInterval;
-
-        var connectedTime;
 
         // websocket onopen evefalsent listener
         ws.onopen = () => {
@@ -93,9 +107,8 @@ export default class FootballScoreboardManage extends Component {
             this.toggleConnectWs(true);
             console.log("connected websocket Football Scoreboard component");
             ws.send(process.env.REACT_APP_KAFKA_TOPIC);
-            this.setState({ ws: ws});
+            this.setState({ ws: ws,connectedTime: Date.now()});
 
-            connectedTime = Date.now();
             that.timeout = 250; // reset timer to 250 on open of websocket connection 
             clearTimeout(connectInterval); // clear Interval on on open of websocket connection
         };
@@ -129,14 +142,10 @@ export default class FootballScoreboardManage extends Component {
             ws.close();
         };
 
-        let loadingMatches = [];
         // websocket on message
         ws.onmessage = (e) => {
-            console.log(e.data);
             var data = JSON.parse(e.data);
-            loadingMatches.push(data);
-
-            this.setState({ places: [...this.state.places, data]})
+            this.list.push(data);
         }
     };
 
@@ -229,7 +238,7 @@ export default class FootballScoreboardManage extends Component {
 
 
         // time diff 3 days in millis
-        const {numberPerPage, page, filterByClubID, filterByLeagueID} = this.state
+        const {numberPerPage, page, filterByClubID, filterByLeagueID, connectedTime} = this.state
         const time_diff = 259200000;  
         
         var filteredMatches = this.state.places
@@ -284,7 +293,7 @@ export default class FootballScoreboardManage extends Component {
                             </td>
                             <td>
                                 {this.timeStampsToDate(i.time) ? this.timeStampsToDate(i.time): ""}
-                                {Date.now() - i.time < time_diff && <CBadge style={{marginLeft:"2%"}} color="light-purple">New</CBadge>}
+                                {connectedTime < i.time && <CBadge style={{marginLeft:"2%"}} color="light-purple">New</CBadge>}
                             </td>
                         </tr>
         );
