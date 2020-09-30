@@ -209,10 +209,10 @@ export default class FootballScoreboardManage extends Component {
         })
     }
 
-    viewJson(filteredMatches) {
+    viewJson(filteredPlaces) {
         Modal.info({
           content: (
-            <ReactJson collapsed src={filteredMatches} theme="shapeshifter:inverted" iconStyle="triangle" />
+            <ReactJson collapsed src={filteredPlaces} theme="shapeshifter:inverted" iconStyle="triangle" />
           ),
           style:({top: "20%"}), width: 1000,
           onOk() {},
@@ -231,7 +231,6 @@ export default class FootballScoreboardManage extends Component {
         }
         return uniques;
     }
-    
 
     render() {
         const { Option } = Select;
@@ -241,16 +240,19 @@ export default class FootballScoreboardManage extends Component {
         const {numberPerPage, page, filterByClubID, filterByLeagueID, connectedTime} = this.state
         const time_diff = 259200000;  
         
-        var filteredMatches = this.state.places
+        var filteredPlaces = this.state.places
+                                //reverse to filter out old updates with same club and same league
+                                .reverse()
+                                .filter((arr, index, self) => index === self.findIndex((t) => (t.clubID === arr.clubID && t.leagueID === arr.leagueID)))
                                 .filter(i => !filterByLeagueID || i.leagueID === filterByLeagueID) 
                                 .filter(i => !filterByClubID || i.clubID === filterByClubID)
 
-        const pageCount = Math.ceil(filteredMatches.length / this.state.numberPerPage);
+        const pageCount = Math.ceil(filteredPlaces.length / this.state.numberPerPage);
         
         const clubs = this.uniqueArray(this.state.places.map(m => [m.clubLabel, m.clubID]))
         const leagues = this.uniqueArray(this.state.places.map(m => [m.leagueLabel, m.leagueID]))
 
-        var viewPlaces = filteredMatches
+        var viewPlaces = filteredPlaces
             .sort(function(a,b){return b.time - a.time})
             .slice(numberPerPage * (page - 1), numberPerPage * page)
             .map((i, index) => 
@@ -350,7 +352,7 @@ export default class FootballScoreboardManage extends Component {
                                             {clubs.map(l => <Option key={l[0]} value={l[1]}>{l[0]} <CBadge color="success">{l[1]}</CBadge></Option>)}
                                         </Select>
 
-                                        <Button style={{marginLeft:"10%"}} onClick={() => this.viewJson(filteredMatches)} danger color="info">View JSON</Button>
+                                        <Button style={{marginLeft:"10%"}} onClick={() => this.viewJson(filteredPlaces)} danger color="info">View JSON</Button>
                                 </CRow>
                             </CCardHeader>
                             <CCardBody> 
