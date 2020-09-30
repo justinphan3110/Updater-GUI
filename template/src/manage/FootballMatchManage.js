@@ -97,12 +97,6 @@ export default class FootballMatchManage extends Component {
         console.log(boo);
         this.setState( {connectedWS: boo});
     }
-
-
-    test() {
-        console.log("test")
-    }
-
     
     timeout = 250; // Initial timeout duration as a class variable
 
@@ -122,7 +116,7 @@ export default class FootballMatchManage extends Component {
         ws.onopen = () => {
             
             this.toggleConnectWs(true);
-            console.log("connected websocket Football component");
+            console.log("connected websocket Football Match component");
             ws.send(process.env.REACT_APP_KAFKA_TOPIC);
             this.setState({ ws: ws});
 
@@ -130,8 +124,6 @@ export default class FootballMatchManage extends Component {
             that.timeout = 250; // reset timer to 250 on open of websocket connection 
             clearTimeout(connectInterval); // clear Interval on on open of websocket connection
         };
-
-        setInterval(this.test(), 1000);
 
         // websocket onclose event listener
         ws.onclose = e => {
@@ -325,7 +317,7 @@ export default class FootballMatchManage extends Component {
                                     <CCol sm="5">
                                         <h4 className="text-body">{'Football Match Result'}</h4>
                                         <Spin spinning={!this.state.connectedWS}>
-                                            <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to Football Kafka Consumer Websocket"}</CBadge>
+                                            <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to Football Match Kafka Consumer Websocket"}</CBadge>
                                         </Spin>
                                     </CCol>
                                 </CRow>
@@ -367,40 +359,8 @@ export default class FootballMatchManage extends Component {
                                         </Select>
 
                                         <Button style={{marginLeft:"10%"}} onClick={() => this.viewJson(filteredMatches)} danger color="info">View JSON</Button>
-                                        {/* <Modal 
-                                            // className="modal-lg"
-                                            title="Json for new matches"
-                                            // style={{width: "300%"}}
-                                            visible={this.state.viewJson} 
-                                            onOk={this.viewJsonToggle.bind(this)}
-                                            // color="info"
-                                            // centered
-                                        >
-                                            <ReactJson collapsed src={filteredMatches} theme="twilight" iconStyle="triangle" />
-                                        </Modal> */}
-
-                                       
                                 </CRow>
                             </CCardHeader>
-
-                            {/* <CModal 
-                            show={this.state.viewNewEntity} 
-                            onClose={this.toggleViewNewEntity.bind(this)}
-                            color="info"
-                            >
-                            <CModalHeader closeButton>
-                                <CModalTitle>
-                                    Details Information
-                                </CModalTitle>
-                            </CModalHeader>
-                            <CModalBody>
-                                <ReactJson src={this.state.viewItem} theme="summerfruit:inverted" iconStyle="triangle" />
-                            </CModalBody>
-                            <CModalFooter>
-                                <CButton color="secondary" onClick={this.toggleViewNewEntity.bind(this)}>close</CButton>
-                            </CModalFooter>
-                            </CModal>
-                            </CCardHeader> */}
                             <CCardBody> 
                                 
                             <br />
@@ -408,7 +368,6 @@ export default class FootballMatchManage extends Component {
                             <table className="table table-hover table-striped table-borderless mb-0 d-none d-sm-table">
                                 <thead className="thead-light">
                                 <tr>
-                                    {/* <th className="text-center"><CIcon name="cil-people" /></th> */}
                                     <th className="text-black-60" scope="col">League</th>
                                     <th className="text-black-60" scope="col">Home Team</th>
                                     <th className="text-black-60" scope="col">Away Team</th>
@@ -427,7 +386,7 @@ export default class FootballMatchManage extends Component {
             </CCol>
         </CRow>
               
-            </React.Fragment>
+        </React.Fragment>
         )
     }
 }
