@@ -57,7 +57,7 @@ export default class FootballMatchManage extends Component {
     componentDidMount() {
         this.timerId = setInterval(() => {
             this.setState((prevState) => ({ time: prevState.time + 0.1 }));
-        }, 100);
+        }, 10);
 
         this.connect();
         // this.update();
