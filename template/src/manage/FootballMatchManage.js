@@ -57,27 +57,13 @@ export default class FootballMatchManage extends Component {
     
 
     componentDidMount() {
-        // setInterval(this.connect(), 10000);
-        // setInterval(this.connect.bind(this), 3000);
         this.connect();
-        // console.log("props " + this.props.leagueIDs);
     }
 
     componentWillMount() {
         this.state.ws && this.state.ws.close();
     }
 
-
-    // loadingMatchesIntoComponentMatches(loadingMatches) {
-    //     const {numberPerPage, page} = this.state
-
-    //     this.setState({matches: loadingMatches},
-    //         () =>this.setState({ pageCount: Math.ceil(this.state.matches.length / this.state.numberPerPage), 
-    //             viewMatches:  this.state.matches
-    //                     .filter(i => i.time && i.matchTime && i.leagueID && i.awayTeamID && i.homeTeamID)
-    //                     .sort(function(a,b){return b.time - a.time})
-    //                     .slice(numberPerPage * (page - 1), numberPerPage * page)}))
-    // }
 
     componentDidUpdate(prevProps, prevStates) {
 
@@ -228,7 +214,6 @@ export default class FootballMatchManage extends Component {
 
     viewJson(filteredMatches) {
         Modal.info({
-        //   title: 'Json for football matches',
           content: (
             <ReactJson collapsed src={filteredMatches} theme="shapeshifter:inverted" iconStyle="triangle" />
           ),
@@ -258,9 +243,6 @@ export default class FootballMatchManage extends Component {
         // time diff 3 days in millis
         const {numberPerPage, page, filterByClubID, filterByLeagueID} = this.state
         const time_diff = 259200000;  
-        
-        // console.log("render matches " , this.state.matches.length)
-        // new matches
         
         var filteredMatches = this.state.matches
                                 .filter(i => i.time && i.matchTime && i.leagueID && i.awayTeamID && i.homeTeamID)
