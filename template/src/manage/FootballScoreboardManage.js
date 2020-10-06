@@ -1,6 +1,6 @@
 // import React, { Component } from 'react'
-import React, { Component, useState, useEffect } from 'react';
-import { Spin, Alert } from 'antd';
+import React, { Component } from 'react';
+import { Spin } from 'antd';
 import { Select, Button, Modal } from 'antd';
 import {
     Pagination, PaginationItem, PaginationLink,
@@ -10,18 +10,10 @@ import {
     CBadge,
     CCol,
     CRow,    
-    CButton, 
-
-    CModal,
-    CModalHeader,
-    CModalTitle,
-    CModalBody,
-    CModalFooter,
-        CCard,
+    CCard,
     CCardBody,
     CCardHeader,
 } from '@coreui/react';
-import CIcon from '@coreui/icons-react';
 import ReactJson from 'react-json-view'
 
 
@@ -73,14 +65,29 @@ export default class FootballScoreboardManage extends Component {
         this.state.ws && this.state.ws.close();
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        const {numberPerPage, page, filterByClubID, filterByLeagueID, connectedTime} = this.state
+        
+        if(numberPerPage !== nextState.numberPerPage || 
+             page !== nextState.page ||
+             filterByClubID !== nextState.filterByClubID || 
+             filterByLeagueID !== nextState.filterByLeagueID || 
+             connectedTime !== nextState.connectedTime) {
+            
+            return true;
+        }
+        
+        if(this.list.length === 0) {
+            return false;
+        }
+
+        return true;        
+    }
+
     componentDidUpdate(prevProps, prevStates) {
         if(this.state.time !== prevStates.time) {
                 this.setState({places: [...this.state.places, ...this.list]}, () => this.list = [])
         }
-    }
-
-    toggleViewNewEntity(item) {
-        this.setState( { viewMatch: ! this.state.viewMatch, viewItem: item});
     }
 
     toggleConnectWs(boo) {
@@ -256,14 +263,17 @@ export default class FootballScoreboardManage extends Component {
             .sort(function(a,b){return b.time - a.time})
             .slice(numberPerPage * (page - 1), numberPerPage * page)
             .map((i, index) => 
-                        <tr key={Math.random()} onClick={this.toggleViewNewEntity.bind(this, i)}>
-                            <td><CBadge color={'info'} href={i.leagueCanonicalURL} target="_blank" style={{ fontSize: 16 }}>{i.leagueLabel}</CBadge>
-                                <CBadge style={{marginLeft: "2%"}} color="success">{i.leagueID}</CBadge>
+                        <tr key={index}>
+                            <td>
+                                {i.leagueImageURL && <img src={i.leagueImageURL} className="transfermarkt_profile_pic"/>}
+                                <CBadge color={'info'} href={i.leagueCanonicalURL} target="_blank" style={{ fontSize: 16 }}>{i.leagueLabel}</CBadge>
+                                <CBadge className="transfermarkt_id_tags" color="success">{i.leagueID}</CBadge>
                             </td>
                             <td>
+                                {i.place.footballClubImgURL && <img src={i.place.footballClubImgURL} className="transfermarkt_profile_pic"/>}
                                 <a href={i.clubCanonicalURL} target="_blank">
-                                <span style={{ color: '#8A2BE2' }} >{i.clubLabel}</span>
-                                <CBadge style={{marginLeft: "2%"}} color="success">{i.clubID}</CBadge>
+                                <span style={{ color: '#8A2BE2', marginLeft: "2%"}} >{i.clubLabel}</span>
+                                <CBadge className="transfermarkt_id_tags" color="success">{i.clubID}</CBadge>
                                 </a>
                             </td>
                             <td>
@@ -291,11 +301,14 @@ export default class FootballScoreboardManage extends Component {
                                 <CBadge style={{fontSize: 16}} color="primary">{i.place.points}</CBadge>
                             </td>
                             <td>
+                                <CBadge style={{fontSize: 16}} color="info">{i.place.points}</CBadge>
+                            </td>
+                            <td>
                                 <CBadge style={{fontSize: 16}} color="secondary">{i.place.season}</CBadge>
                             </td>
                             <td>
                                 {this.timeStampsToDate(i.time) ? this.timeStampsToDate(i.time): ""}
-                                {connectedTime < i.time && <CBadge style={{marginLeft:"2%"}} color="light-purple">New</CBadge>}
+                                {connectedTime < i.time && <CBadge className="transfermarkt_id_tags" color="light-purple">New</CBadge>}
                             </td>
                         </tr>
         );
@@ -309,7 +322,7 @@ export default class FootballScoreboardManage extends Component {
                             <CCardHeader>
                                 <CRow>
                                     <CCol sm="5">
-                                        <h4 className="text-body">{'Football Match Result'}</h4>
+                                        <h4 className="text-body">{'Football Scoreboard Update'}</h4>
                                         <Spin spinning={!this.state.connectedWS}>
                                             <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to Football Scoreboard Kafka Consumer Websocket"}</CBadge>
                                         </Spin>
@@ -333,7 +346,8 @@ export default class FootballScoreboardManage extends Component {
                                                 || option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                             }
                                         >
-                                            {leagues.map(l => <Option key={l[0]} value={l[1]}>{l[0]}<CBadge color="success">{l[1]}</CBadge></Option>)}
+                                            {leagues.map(l => <Option key={l[0]} value={l[1]}>{l[0]}
+                                            <CBadge className="transfermarkt_id_tags" color="success">{l[1]}</CBadge></Option>)}
                                         </Select>
 
                                         <Select
@@ -348,8 +362,8 @@ export default class FootballScoreboardManage extends Component {
                                                 || option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                             }
                                         >
-                                            {/* <Option key={"None"} value={undefined}>{"None"}</Option> */}
-                                            {clubs.map(l => <Option key={l[0]} value={l[1]}>{l[0]} <CBadge color="success">{l[1]}</CBadge></Option>)}
+                                            {clubs.map(l => <Option key={l[0]} value={l[1]}>{l[0]} 
+                                            <CBadge className="transfermarkt_id_tags" color="success">{l[1]}</CBadge></Option>)}
                                         </Select>
 
                                         <Button style={{marginLeft:"10%"}} onClick={() => this.viewJson(filteredPlaces)} danger color="info">View JSON</Button>
@@ -372,6 +386,7 @@ export default class FootballScoreboardManage extends Component {
                                     <th className="text-black-60" scope="col">Goal For</th>
                                     <th className="text-black-60" scope="col">Goal Against</th>
                                     <th className="text-black-60" scope="col">Points</th>
+                                    <th className="text-black-60" scope="col">Place</th>
                                     <th className="text-black-60" scope="col">Season</th>
                                     <th className="text-black-60" scope="col">Time</th>
                                 </tr>

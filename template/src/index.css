@@ -7,8 +7,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+
+.transfermarkt_profile_pic {
+  width: 30px;
+  height: 35px;
+  margin-right: 1%;
+}
+
+.transfermarkt_id_tags {
+  margin-left: 1%;
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
-

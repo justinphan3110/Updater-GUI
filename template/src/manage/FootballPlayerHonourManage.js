@@ -1,5 +1,5 @@
 // import React, { Component } from 'react'
-import React, { Component } from 'react';
+import React, { Component, useState, useEffect } from 'react';
 import { Spin, Alert } from 'antd';
 import { Select, Button, Modal } from 'antd';
 import {
@@ -10,16 +10,20 @@ import {
     CBadge,
     CCol,
     CRow,    
-    CCard,
+    CButton, CWidgetIcon,
+
+    CCollapse,
+        CCard,
     CCardBody,
     CCardHeader,
 } from '@coreui/react';
+// import {CilBritishPound} from '@coreui/icons';
 import CIcon from '@coreui/icons-react';
 import ReactJson from 'react-json-view'
 
 
 
-export default class FootballMatchManage extends Component {
+export default class FootballPlayerHonourManage extends Component {
     constructor(props) {
         super(props)
 
@@ -29,18 +33,19 @@ export default class FootballMatchManage extends Component {
             connectedTime: undefined,
 
 
+
             // kafka variables
             // deletedItems: [],
-            matches: [],
+            players: [],
             time: 0,
-            
-            filterByLeagueID: undefined,
+            details: [],
             filterByClubID: undefined,
+            filterByPlayerID: undefined,
             // loadingMatches: [],
             // viewMatches: [],
 
             viewJson: false,       
-            viewItem: undefined,
+            // viewItem: undefined,
 
             // react pagination
             numberPerPage: 10,
@@ -48,16 +53,14 @@ export default class FootballMatchManage extends Component {
             page: 1,
 
         }
-
-
     }
 
+    // timerID for delay in receiving kafka message
     timerId = null;
-    
     componentDidMount() {
         this.timerId = setInterval(() => {
             this.setState((prevState) => ({ time: prevState.time + 0.1 }));
-        }, 10);
+        }, 100);
 
         this.connect();
     }
@@ -68,11 +71,13 @@ export default class FootballMatchManage extends Component {
     }
 
     shouldComponentUpdate(nextProps, nextState) {
-        const {numberPerPage, page, filterByClubID, filterByLeagueID, connectedTime} = this.state
+        const {numberPerPage, page, filterByClubID, filterByPlayerID, details, connectedTime} = this.state
+        
         if(numberPerPage !== nextState.numberPerPage || 
              page !== nextState.page ||
              filterByClubID !== nextState.filterByClubID || 
-             filterByLeagueID !== nextState.filterByLeagueID || 
+             details !== nextState.details ||
+             filterByPlayerID !== nextState.filterByPlayerID ||
              connectedTime !== nextState.connectedTime) {
             
             return true;
@@ -87,8 +92,18 @@ export default class FootballMatchManage extends Component {
 
     componentDidUpdate(prevProps, prevStates) {
         if(this.state.time !== prevStates.time) {
-                this.setState({matches: [...this.state.matches, ...this.list]}, () => this.list = [])
+                this.setState({players: [...this.state.players, ...this.list]}, () => this.list = [])
         }
+    }
+
+    toggleShow(index) {
+        var newDetails = [...this.state.details]
+        if(newDetails.includes(index))
+            newDetails = newDetails.filter(i => i !== index);
+        else 
+            newDetails.push(index);
+        
+        this.setState({details: newDetails});
     }
 
 
@@ -104,20 +119,19 @@ export default class FootballMatchManage extends Component {
      * This function establishes the connect with the websocket and also ensures constant reconnection if connection closes
      */
     list = []
-    connect() {
-        var url = process.env.REACT_APP_HOST + ":" + process.env.REACT_APP_KAFKA_CONSUMER_PORT + process.env.REACT_APP_KAFKA_CONSUMER_ROUTE + "/football/match";
+    connect = () => {
+        var url = process.env.REACT_APP_HOST + ":" + process.env.REACT_APP_KAFKA_CONSUMER_PORT + process.env.REACT_APP_KAFKA_CONSUMER_ROUTE + "/football/playerHonours";
         var ws = new WebSocket("ws://" + url);
         let that = this; // cache the this
         var connectInterval;
-
 
         // websocket onopen evefalsent listener
         ws.onopen = () => {
             
             this.toggleConnectWs(true);
-            console.log("connected websocket Football Match component");
+            console.log("connected websocket Football Player Honours component");
             ws.send(process.env.REACT_APP_KAFKA_TOPIC);
-            this.setState({ ws: ws, connectedTime: Date.now()});
+            this.setState({ ws: ws,connectedTime: Date.now()});
 
             that.timeout = 250; // reset timer to 250 on open of websocket connection 
             clearTimeout(connectInterval); // clear Interval on on open of websocket connection
@@ -158,7 +172,6 @@ export default class FootballMatchManage extends Component {
             this.list.push(data);
         }
     };
-
 
     /**
      * utilited by the @function connect to check if the connection is close, if so attempts to reconnect
@@ -220,10 +233,10 @@ export default class FootballMatchManage extends Component {
         })
     }
 
-    viewJson(filteredMatches) {
+    viewJson(filteredPlayers) {
         Modal.info({
           content: (
-            <ReactJson collapsed src={filteredMatches} theme="shapeshifter:inverted" iconStyle="triangle" />
+            <ReactJson collapsed src={filteredPlayers} theme="shapeshifter:inverted" iconStyle="triangle" />
           ),
           style:({top: "20%"}), width: 1000,
           onOk() {},
@@ -242,61 +255,81 @@ export default class FootballMatchManage extends Component {
         }
         return uniques;
     }
+
+    generateHonours(honours) {
+        return (
+            <table className="table table-hover table-striped table-borderless mb-0 d-none d-sm-table">
+            <thead className="thead-light">
+                <tr>
+                    <th className="text-black-60" scope="col">Honours</th>
+                    <th className="text-black-60" scope="col">#</th>
+                </tr>
+            </thead>
+            <tbody>
+                {Object.keys(honours).map((honour) => <tr key={honour}>
+                                                            <td><CBadge style={{fontSize: "15px"}} color="warning">{honour}</CBadge></td> 
+                                                            <td><CBadge color="secondary">{honours[honour]}</CBadge></td>
+                                                        </tr>)}
+            </tbody>
+            </table>
+        )
+        return 
+    }
     
 
     render() {
         const { Option } = Select;
+        // console.log("render")
 
         // time diff 3 days in millis
-        const {numberPerPage, page, filterByClubID, filterByLeagueID, connectedTime} = this.state
+        const {numberPerPage, page, filterByClubID, filterByPlayerID, connectedTime} = this.state
         const time_diff = 259200000;  
         
-        var filteredMatches = this.state.matches
-                                .filter(i => i.time && i.matchTime && i.leagueID && i.awayTeamID && i.homeTeamID)
-                                .filter(i => !filterByLeagueID || i.leagueID === filterByLeagueID) 
-                                .filter(i => !filterByClubID || (i.homeTeamID === filterByClubID || i.awayTeamID === filterByClubID))
+        var filteredPlayers = this.state.players
+                                //reverse to filter out old updates with same player
+                                .reverse()
+                                .filter((arr, index, self) => index === self.findIndex((t) => (t.clubID === arr.clubID && t.playerID === arr.playerID)))
+                                .filter(i => !filterByPlayerID || i.playerID === filterByPlayerID) 
+                                .filter(i => !filterByClubID || i.clubID === filterByClubID)
 
-        const pageCount = Math.ceil(filteredMatches.length / this.state.numberPerPage);
+        const pageCount = Math.ceil(filteredPlayers.length / this.state.numberPerPage);
         
-        const clubs = this.uniqueArray(this.state.matches.flatMap(m => [[m.homeTeamLabel, m.homeTeamID], [m.awayTeamLabel, m.awayTeamID]]))
-        const leagues = this.uniqueArray(this.state.matches.map(m => [m.leagueLabel, m.leagueID]))
+        const clubs = this.uniqueArray(this.state.players.map(m => [m.clubLabel, m.clubID]))
+        const leagues = this.uniqueArray(this.state.players.map(m => [m.playerLabel, m.playerID]))
 
-        var viewMatches = filteredMatches
+        var viewPlaayers = filteredPlayers
             .sort(function(a,b){return b.time - a.time})
             .slice(numberPerPage * (page - 1), numberPerPage * page)
             .map((i, index) => 
+                        <React.Fragment key={index}>
+
                         <tr key={index}>
                             <td>
-                                {i.leagueImageURL && <img src={i.leagueImageURL} className="transfermarkt_profile_pic"/>}
-                                <CBadge color={'info'} href={i.leagueCanonicalURL} target="_blank" style={{ fontSize: 16, marginLeft:"2%" }}>{i.leagueLabel}</CBadge>
-                                <CBadge className="transfermarkt_id_tags" color="success">{i.leagueID}</CBadge>
-                            </td>
-                            <td>
-                                {i.homeTeamImageURL && <img src={i.homeTeamImageURL} className="transfermarkt_profile_pic"/>}
-                                <a href={i.homeTeamCanonicalURL} target="_blank">
-                                <span style={{ color: '#8A2BE2' }} >{i.homeTeamLabel}</span>
-                                <CBadge className="transfermarkt_id_tags" color="success">{i.homeTeamID}</CBadge>
+                                {i.playerImageURL && <img src={i.playerImageURL} className="transfermarkt_profile_pic"/>}
+                                <a href={i.playerCanonicalURL} target="_blank">
+                                    <CBadge className="transfermarkt_id_tags" color="info" style={{fontSize: 16 }}>{i.playerLabel}</CBadge>
+                                    <CBadge className="transfermarkt_id_tags" color="success">{i.playerID}</CBadge>
                                 </a>
                             </td>
                             <td>
-                                {i.awayTeamImageURL && <img src={i.awayTeamImageURL} className="transfermarkt_profile_pic"/>}
-                                <a href={i.awayTeamCanonicalURL} target="_blank">
-                                    <span style={{ color: '#e65c00' }}>{i.awayTeamLabel}</span>
-                                    <CBadge className="transfermarkt_id_tags" color="success">{i.awayTeamID}</CBadge>
+                                <a href={i.clubCanonicalURL} target="_blank">
+                                    {i.clubImageURL && <img src={i.clubImageURL} className="transfermarkt_profile_pic"/>}
+                                    <span style={{ color: '#8A2BE2', marginLeft: "2%" }} >{i.clubLabel}</span>
+                                    <CBadge className="transfermarkt_id_tags" color="success">{i.clubID}</CBadge>
                                 </a>
                             </td>
                             <td>
-                                <CBadge href={i.matchPreviewURL} target="_blank" style={{fontSize: 16}} color="danger">{i.result}</CBadge>
-                                
+                                <Button danger onClick={this.toggleShow.bind(this,index)}>show</Button>
+                                {/* {this.generateStatsTable(i.stats)} */}
                             </td>
-                            <td>
-                                {this.timeStampsToDate(i.matchTime) ? this.timeStampsToDate(i.matchTime): ""}
-                            </td>
-                            <td>
-                                {this.timeStampsToDate(i.time) ? this.timeStampsToDate(i.time): ""}
-                                {connectedTime < i.time && <CBadge className="transfermarkt_id_tags" color="light-purple">New</CBadge>}
-                            </td>
+
                         </tr>
+                            <CCollapse show={this.state.details.includes(index)}>
+                            <CCardBody>
+                                {this.generateHonours(i.honours)}
+                            </CCardBody>
+                            </CCollapse>
+                        </React.Fragment>
         );
 
 
@@ -308,9 +341,9 @@ export default class FootballMatchManage extends Component {
                             <CCardHeader>
                                 <CRow>
                                     <CCol sm="5">
-                                        <h4 className="text-body">{'Football Match Result'}</h4>
+                                        <h4 className="text-body">{'Football Player Update'}</h4>
                                         <Spin spinning={!this.state.connectedWS}>
-                                            <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to Football Match Kafka Consumer Websocket"}</CBadge>
+                                            <CBadge className="small" key={Math.random()} color={"success"}> {"Connected to Football Player Kafka Consumer Websocket"}</CBadge>
                                         </Spin>
                                     </CCol>
                                 </CRow>
@@ -324,16 +357,15 @@ export default class FootballMatchManage extends Component {
                                             showSearch
                                             allowClear
                                             style={{ width: "40%" }}
-                                            placeholder="Filter by League"
-                                            onChange={(v) => this.setState({filterByLeagueID: v, page: 1})}
+                                            placeholder="Filter by Player"
+                                            onChange={(v) => this.setState({filterByPlayerID: v, page: 1})}
 
                                             filterOption={(input, option) =>
                                                 option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0 
                                                 || option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                             }
                                         >
-                                            {leagues.map(l => <Option key={l[0]} value={l[1]}>{l[0]}
-                                                <CBadge className="transfermarkt_id_tags" color="success">{l[1]}</CBadge></Option>)}
+                                            {leagues.map(l => <Option key={l[0]} value={l[1]}>{l[0]}<CBadge className="transfermarkt_id_tags" color="success">{l[1]}</CBadge></Option>)}
                                         </Select>
 
                                         <Select
@@ -343,17 +375,17 @@ export default class FootballMatchManage extends Component {
                                             style={{ width: "40%", marginLeft: "2%" }}
                                             placeholder="Filter by Club"
                                             onChange={(v) => this.setState({filterByClubID: v, page: 1})}
+                                            // onChange={(v) => console.log(v)}
                                             filterOption={(input, option) =>
                                                 option.key.toLowerCase().indexOf(input.toLowerCase()) >= 0 
                                                 || option.value.toLowerCase().indexOf(input.toLowerCase()) >= 0
                                             }
                                         >
                                             {/* <Option key={"None"} value={undefined}>{"None"}</Option> */}
-                                            {clubs.map(l => <Option key={l[0]} value={l[1]}>{l[0]}
-                                                <CBadge className="transfermarkt_id_tags" color="success">{l[1]}</CBadge></Option>)}
+                                            {clubs.map(l => <Option key={l[0]} value={l[1]}>{l[0]}<CBadge className="transfermarkt_id_tags" color="success">{l[1]}</CBadge></Option>)}
                                         </Select>
 
-                                        <Button style={{marginLeft:"10%"}} onClick={() => this.viewJson(filteredMatches)} danger color="info">View JSON</Button>
+                                        <Button style={{marginLeft:"10%"}} onClick={() => this.viewJson(filteredPlayers)} danger color="info">View JSON</Button>
                                 </CRow>
                             </CCardHeader>
                             <CCardBody> 
@@ -363,18 +395,13 @@ export default class FootballMatchManage extends Component {
                             <table className="table table-hover table-striped table-borderless mb-0 d-none d-sm-table">
                                 <thead className="thead-light">
                                 <tr>
-                                    <th className="text-black-60" scope="col">League</th>
-                                    <th className="text-black-60" scope="col">Home Team</th>
-                                    <th className="text-black-60" scope="col">Away Team</th>
-                                    <th className="text-black-60" scope="col">Result</th>
-                                    <th className="text-black-60" scope="col">Match Time</th>
-                                    <th className="text-black-60" scope="col">Updated Time</th>
+                                    <th className="text-black-60" scope="col">Player</th>
+                                    <th className="text-black-60" scope="col">Team</th>
+                                    <th className="text-black-60" scope="col">Honours</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                    {/* <Suspense> */}
-                                        {viewMatches}
-                                {/* </Suspense> */}
+                                {viewPlaayers}
                                 </tbody>
                             </table>
 

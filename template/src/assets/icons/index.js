@@ -130,6 +130,7 @@ import {
   cilWarning,
   cilFootball,
   cilBook,
+  cilBritishPound,
 } from '@coreui/icons'
 
 export const icons = Object.assign({}, {
@@ -137,6 +138,7 @@ export const icons = Object.assign({}, {
   logo,
   logoNegative
 }, {
+  cilBritishPound,
   cilFootball,
   cilBook,
   cilAlignCenter,

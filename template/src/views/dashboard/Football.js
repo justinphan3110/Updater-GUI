@@ -22,6 +22,8 @@ import WikiDataManage from '../../manage/WikiDataManage';
 import FootballMatchTable from '../../components/FootballMatchTable';
 import FootballMatchManage from '../../manage/FootballMatchManage';
 import FootballScoreboardManage from '../../manage/FootballScoreboardManage';
+import FootballPlayerManage from '../../manage/FootballPlayerManage';
+import FootballPlayerHonourManage from '../../manage/FootballPlayerHonourManage'
 
 export default class Football extends Component {
     constructor(props) {
@@ -94,7 +96,7 @@ export default class Football extends Component {
                         </CNavItem>
                         <CNavItem>
                         <CNavLink>
-                            Club
+                            Player Honour
                         </CNavLink>
                         </CNavItem>
                     </CNav>
@@ -107,7 +109,10 @@ export default class Football extends Component {
                             <FootballScoreboardManage />
                         </CTabPane>
                         <CTabPane>
-                        {/* {`3. ${lorem}`} */}
+                            <FootballPlayerManage />
+                        </CTabPane>
+                        <CTabPane>
+                            <FootballPlayerHonourManage/>
                         </CTabPane>
                     </CTabContent>
                     </CTabs>
